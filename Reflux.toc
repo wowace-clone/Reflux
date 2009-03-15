@@ -1,0 +1,11 @@
+## Interface: 30000
+## Title: Reflux
+## Notes: Addon to switch all your profiles via slash command
+## DefaultState: enabled
+## Author: kagaro
+## Version: 1.0
+## X-Category: Miscellaneous
+## X-eMail: sal.scotto@gmail.com
+## OptionalDeps: Ace2, Ace3
+
+Reflux.lua
