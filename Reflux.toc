@@ -1,11 +1,11 @@
 ## Interface: 30000
 ## Title: Reflux
-## Notes: Addon to switch all your profiles via slash command
+## Notes: Addon to switch all your AceDB profiles via slash command. This tool also allows you to emulate profiles for non AceDB addons.
 ## DefaultState: enabled
 ## Author: kagaro
 ## Version: @project-version@
 ## X-Category: Miscellaneous
 ## X-eMail: sal.scotto@gmail.com
-## OptionalDeps: Ace2, Ace3
+## SavedVariables: RefluxDB
 
 Reflux.lua
