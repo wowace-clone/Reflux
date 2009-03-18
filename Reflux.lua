@@ -38,7 +38,13 @@ local function setAceProfile(profile)
 		local AceDB = AceLibrary("AceDB-2.0")
 		if AceDB and AceDB.registry then
 			for db in pairs(AceDB.registry) do
-				db:SetProfile(profile)
+				if db:IsActive() then
+					db:SetProfile(profile)
+				else
+					db:ToggleActive(true)
+					db:SetProfile(profile)
+					db:ToggleActive(false)
+				end
 			end
 		end
 	end	
@@ -64,7 +70,16 @@ local function copyAceProfile(profile)
 		local AceDB = AceLibrary("AceDB-2.0")
 		if AceDB and AceDB.registry then
 			for db in pairs(AceDB.registry) do
-				db:CopyProfileFrom(profile)
+				local function cp()
+					db:CopyProfileFrom(profile)
+				end
+				if db:IsActive() then
+					pcall(cp)
+				else
+					db:ToggleActive(true)
+					pcall(cp)
+					db:ToggleActive(false)
+				end
 			end
 		end
 	end	
@@ -78,7 +93,7 @@ local function deleteAceProfile(profile)
 		if AceDB and AceDB.db_registry then
 			for db in pairs(AceDB.db_registry) do
 				if not db.parent then --db.sv is a ref to the saved vairable name
-					db:DeleteProfile(profile)
+					db:DeleteProfile(profile,true)
 				end
 			end
 		end
@@ -90,7 +105,10 @@ local function deleteAceProfile(profile)
 		local AceDB = AceLibrary("AceDB-2.0")
 		if AceDB and AceDB.registry then
 			for db in pairs(AceDB.registry) do
-				db:DeleteProfile(profile,true)
+				local function cp()
+					db:DeleteProfile(profile,true)
+				end
+				pcall(cp)
 			end
 		end
 	end	
@@ -99,16 +117,22 @@ end
 local function showHelp()
 	print("/reflux switch [profile name]")
 	print("This switches to a given profile. Emulated variables are only touched if you previously created a profile in reflux. This automatically Reloads the UI")
+	print("/reflux addons [profile name]")
+	print("This restores a previously saved set of addons. Due to technical reasons, it cant switch profiles at the same time. This automatically Reloads the UI")
 	print("/reflux create [profile name]")
 	print("This created a profile set.")
 	print("/reflux add [saved variable]")
 	print("This will add a given saved variable to the profile emulation. You will need to get this name from the .toc file")
-	print("/reflux save")
-	print("This saves the emulated profiles.")
+	print("/reflux save <addons>")
+	print("This saves the emulated profiles. Optionally if you can save addon state as well in the profile.")
 	print("/reflux cleardb")
 	print("This will clear out all Reflux saved information.")
 	print("/reflux show")
 	print("This will show you what the active profile is, and all emulated variables.")
+	print("/reflux copy [profile to copy]")
+	print("This will attempt to copy the provide profile to the current profile. This automatically Reloads the UI.")
+	print("/reflux delete [profile]")
+	print("This is delete a given profile. Please NOTE you can NOT delete the active profile.")
 end
 -- Store Addon state
 local function storeAddonState(tbl)
@@ -116,12 +140,13 @@ local function storeAddonState(tbl)
 	local count = GetNumAddOns()
 	while index < count do
 		local name, title, notes, enabled, loadable, reason, security = GetAddOnInfo(index)
-		tbl[name]=enabled
+		tbl[name]=enabled or 0
+		index = index + 1
 	end
 end
 local function restoreAddonState(tbl)
 	for k,v in pairs(tbl) do
-		if v then
+		if v == 1 then
 			EnableAddOn(k)
 		else
 			DisableAddOn(k)
@@ -169,7 +194,7 @@ SlashCmdList["REFLUX"] = function (msg)
 		setAceProfile(arg)
 		RefluxDB.activeProfile=arg
 		ReloadUI()
-	elseif cmd == "switchaddons" then
+	elseif cmd == "addons" then
 		if RefluxDB.addons[arg] then
 			restoreAddonState(RefluxDB.addons[arg])
 		end
@@ -207,22 +232,21 @@ SlashCmdList["REFLUX"] = function (msg)
 			print("You need to activate a profile before you can copy from another profile")
 			return
 		end
-		copyAceProfile(arg)
 		if RefluxDB.profiles[arg] then
 			RefluxDB.profiles[RefluxDB.activeProfile] = DeepCopy(RefluxDB.profiles[arg])
 			RefluxDB.addons[RefluxDB.activeProfile] = DeepCopy(RefluxDB.addons[arg])
-		else
-			print(arg.." not found.")
 		end
+		copyAceProfile(arg)
+		ReloadUI()
 	elseif cmd == "delete" and strlen(arg) > 1 then
 		if RefluxDB.profiles[arg] then
 			RefluxDB.profiles[arg] = nil
 			RefluxDB.addons[arg] = nil
 		end
-		deleteAceProfile(arg)
 		if arg == RefluxDB.activeProfile then
 			RefluxDB.activeProfile = false
 		end
+		deleteAceProfile(arg)
 	elseif cmd == "add" and strlen(arg) > 1 then
 		if RefluxDB.emulated then
 			if getglobal(arg) then
