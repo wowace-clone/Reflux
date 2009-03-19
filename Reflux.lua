@@ -46,7 +46,7 @@ local function setAceProfile(profile)
 	-- Ace DB 2 check is thoery we shoul dbe able to check this via LibStub
 	-- However someone may have some anceitn copy of Ace2 that was never upgraded to LibStub
 	-- AceLibrary delegate to LibStub so its all good
-	if AceLibrary then
+	if AceLibrary and AceLibrary:HasInstance("AceDB-2.0") then
 		local AceDB = AceLibrary("AceDB-2.0")
 		if AceDB and AceDB.registry then
 			for db in pairs(AceDB.registry) do
@@ -79,7 +79,7 @@ local function copyAceProfile(profile)
 	-- Ace DB 2 check is thoery we shoul dbe able to check this via LibStub
 	-- However someone may have some anceitn copy of Ace2 that was never upgraded to LibStub
 	-- AceLibrary delegate to LibStub so its all good
-	if AceLibrary then
+	if AceLibrary and AceLibrary:HasInstance("AceDB-2.0") then
 		local AceDB = AceLibrary("AceDB-2.0")
 		if AceDB and AceDB.registry then
 			for db in pairs(AceDB.registry) do
@@ -115,7 +115,7 @@ local function deleteAceProfile(profile)
 	-- Ace DB 2 check is thoery we shoul dbe able to check this via LibStub
 	-- However someone may have some anceitn copy of Ace2 that was never upgraded to LibStub
 	-- AceLibrary delegate to LibStub so its all good
-	if AceLibrary then
+	if AceLibrary and AceLibrary:HasInstance("AceDB-2.0") then
 		local AceDB = AceLibrary("AceDB-2.0")
 		if AceDB and AceDB.registry then
 			for db in pairs(AceDB.registry) do
