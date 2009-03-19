@@ -17,8 +17,20 @@ local function DeepCopy(t, lookup_table)
 	end
 	return copy
 end
+
+local function loadAceLibs()
+	if IsAddOnLoadOnDemand("Ace2") and not IsAddOnLoaded("Ace2") then
+		print("Loading Ace2 since it is configured as LoadOnDemand and NOT loaded")
+		LoadAddOn("Ace2")
+	end
+	if IsAddOnLoadOnDemand("Ace3") and not IsAddOnLoaded("Ace3") then	
+		print("Loading Ace3, since it is configured as LoadOnDemand and NOT loaded")
+		LoadAddOn("Ace3")
+	end
+end
 -- Setup ace profiles if we find any
 local function setAceProfile(profile)
+	loadAceLibs()
 	local ls_ace = false
 	-- Ace DB 3 check
 	if LibStub then
@@ -51,6 +63,7 @@ local function setAceProfile(profile)
 end
 -- Copy ace profiles if we find any
 local function copyAceProfile(profile)
+	loadAceLibs()
 	local ls_ace = false
 	-- Ace DB 3 check
 	if LibStub then
@@ -86,6 +99,7 @@ local function copyAceProfile(profile)
 end
 -- Delete Ace profile
 local function deleteAceProfile(profile)
+	loadAceLibs()
 	local ls_ace = false
 	-- Ace DB 3 check
 	if LibStub then
