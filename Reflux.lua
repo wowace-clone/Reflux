@@ -30,7 +30,7 @@ local function loadAceLibs()
 end
 -- Setup ace profiles if we find any
 local function setAceProfile(profile)
-	loadAceLibs()
+	--loadAceLibs()
 	local ls_ace = false
 	-- Ace DB 3 check
 	if LibStub then
@@ -63,7 +63,7 @@ local function setAceProfile(profile)
 end
 -- Copy ace profiles if we find any
 local function copyAceProfile(profile)
-	loadAceLibs()
+	--loadAceLibs()
 	local ls_ace = false
 	-- Ace DB 3 check
 	if LibStub then
@@ -99,7 +99,7 @@ local function copyAceProfile(profile)
 end
 -- Delete Ace profile
 local function deleteAceProfile(profile)
-	loadAceLibs()
+	--loadAceLibs()
 	local ls_ace = false
 	-- Ace DB 3 check
 	if LibStub then

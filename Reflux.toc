@@ -7,5 +7,5 @@
 ## X-Category: Miscellaneous
 ## X-eMail: sal.scotto@gmail.com
 ## SavedVariables: RefluxDB
-
+## OptionalDeps: Ace2
 Reflux.lua
