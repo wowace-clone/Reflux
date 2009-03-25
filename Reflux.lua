@@ -31,6 +31,9 @@ end
 -- Setup ace profiles if we find any
 local function setAceProfile(profile)
 	--loadAceLibs()
+	local LibStub = _G["LibStub"]
+	local AceLibrary = _G["AceLibrary"]
+	
 	local ls_ace = false
 	-- Ace DB 3 check
 	if LibStub then
@@ -64,6 +67,8 @@ end
 -- Copy ace profiles if we find any
 local function copyAceProfile(profile)
 	--loadAceLibs()
+	local LibStub = _G["LibStub"]
+	local AceLibrary = _G["AceLibrary"]
 	local ls_ace = false
 	-- Ace DB 3 check
 	if LibStub then
@@ -101,6 +106,8 @@ end
 local function deleteAceProfile(profile)
 	--loadAceLibs()
 	local ls_ace = false
+	local LibStub = _G["LibStub"]
+	local AceLibrary = _G["AceLibrary"]
 	-- Ace DB 3 check
 	if LibStub then
 		local AceDB = LibStub:GetLibrary("AceDB-3.0",true)
