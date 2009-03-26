@@ -29,7 +29,7 @@ local function loadAceLibs()
 	end
 end
 -- Setup ace profiles if we find any
-local function setAceProfile(profile)
+local function setAceProfile(profile, addon)
 	--loadAceLibs()
 	local LibStub = _G["LibStub"]
 	local AceLibrary = _G["AceLibrary"]
@@ -41,7 +41,13 @@ local function setAceProfile(profile)
 		if AceDB and AceDB.db_registry then
 			for db in pairs(AceDB.db_registry) do
 				if not db.parent then --db.sv is a ref to the saved vairable name
-					db:SetProfile(profile)
+					if addon then
+						if addon and db.sv == addon then
+							db:SetProfile(profile)
+						end
+					else
+						db:SetProfile(profile)
+					end
 				end
 			end
 		end
@@ -53,12 +59,18 @@ local function setAceProfile(profile)
 		local AceDB = AceLibrary("AceDB-2.0")
 		if AceDB and AceDB.registry then
 			for db in pairs(AceDB.registry) do
-				if db:IsActive() then
-					db:SetProfile(profile)
-				else
-					db:ToggleActive(true)
-					db:SetProfile(profile)
-					db:ToggleActive(false)
+				if addon then
+					if addon and db.db.name == addon then
+						db:SetProfile(profile)
+					end
+				else 
+					if db:IsActive() then
+						db:SetProfile(profile)
+					else
+						db:ToggleActive(true)
+						db:SetProfile(profile)
+						db:ToggleActive(false)
+					end
 				end
 			end
 		end
@@ -154,6 +166,8 @@ local function showHelp()
 	print("This will attempt to copy the provide profile to the current profile. This automatically Reloads the UI.")
 	print("/reflux delete [profile]")
 	print("This is delete a given profile. Please NOTE you can NOT delete the active profile.")
+	print("/reflux switchexact addonSVName profile")
+	print("This will reset JUSt the profiled addonSVname to the given profile. This requires advance knowledge of the addon saved variable name.")
 end
 -- Store Addon state
 local function storeAddonState(tbl)
@@ -202,6 +216,11 @@ SlashCmdList["REFLUX"] = function (msg)
 				print(var.." is being emulated.")
 			end
 		end
+	elseif cmd == "switchexact" then
+		local addon,profile = strmatch(arg, "%s*([^%s]+)%s*(.*)");
+		setAceProfile(profile,addon)
+		-- We dont switch emulated profiles Ace profiles only since we are NOT reloadiing the UI
+		-- this is hacky
 	elseif cmd == "switch" then
 		-- Check RefluxDB to see if we have a createdProfile called xxx
 		if RefluxDB.profiles[arg] then
