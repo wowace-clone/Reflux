@@ -1,3 +1,6 @@
+local emulated_default_addons = {
+	
+}
 -- DeepCopy function.
 local function DeepCopy(t, lookup_table)
 	local copy = {}
@@ -33,6 +36,7 @@ local function setAceProfile(profile, addon)
 	--loadAceLibs()
 	local LibStub = _G["LibStub"]
 	local AceLibrary = _G["AceLibrary"]
+	local Rock = _G["Rock"]
 	
 	local ls_ace = false
 	-- Ace DB 3 check
@@ -75,6 +79,21 @@ local function setAceProfile(profile, addon)
 			end
 		end
 	end	
+	-- Rock loading
+	if Rock and Rock:HasLibrary("LibRockDB-1.0") then
+		local RockDB = Rock:GetLibrary("LibRockDB-1.0",false,false)
+		if RockDB and RockDB.data then
+			for db in paris(RockDB.data) do
+				if addon then
+					if addon and db.dbName == addon then
+						db:SetProfile(profile)
+					end
+				else
+					db:SetProfile(profile)
+				end
+			end
+		end
+	end
 end
 -- Copy ace profiles if we find any
 local function copyAceProfile(profile)
@@ -113,6 +132,15 @@ local function copyAceProfile(profile)
 			end
 		end
 	end	
+	-- Rock copy profile
+	if Rock and Rock:HasLibrary("LibRockDB-1.0") then
+		local RockDB = Rock:GetLibrary("LibRockDB-1.0",false,false)
+		if RockDB and RockDB.data then
+			for db in pairs(RockDB.data) do
+				db:CopyProfile(profile)
+			end
+		end
+	end	
 end
 -- Delete Ace profile
 local function deleteAceProfile(profile)
@@ -145,6 +173,15 @@ local function deleteAceProfile(profile)
 			end
 		end
 	end	
+	-- Rock delete profile
+	if Rock and Rock:HasLibrary("LibRockDB-1.0") then
+		local RockDB = Rock:GetLibrary("LibRockDB-1.0",false,false)
+		if RockDB and RockDB.data then
+			for db in pairs(RockDB.data) do
+				db:RemoveProfile(profile)
+			end
+		end
+	end
 end
 -- Show help
 local function showHelp()
