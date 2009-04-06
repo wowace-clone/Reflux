@@ -30,6 +30,10 @@ local function loadAceLibs()
 		print("Loading Ace3, since it is configured as LoadOnDemand and NOT loaded")
 		LoadAddOn("Ace3")
 	end
+	if IsAddOnLoadOnDemand("LibRock-1.0") and not IsAddOnLoaded("LibRock-1.0") then	
+		print("Loading LibRock-1.0, since it is configured as LoadOnDemand and NOT loaded")
+		LoadAddOn("LibRock-1.0")
+	end
 end
 -- Setup ace profiles if we find any
 local function setAceProfile(profile, addon)
@@ -83,7 +87,7 @@ local function setAceProfile(profile, addon)
 	if Rock and Rock:HasLibrary("LibRockDB-1.0") then
 		local RockDB = Rock:GetLibrary("LibRockDB-1.0",false,false)
 		if RockDB and RockDB.data then
-			for db in paris(RockDB.data) do
+			for db in pairs(RockDB.data) do
 				if addon then
 					if addon and db.dbName == addon then
 						db:SetProfile(profile)
