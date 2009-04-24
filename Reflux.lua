@@ -259,10 +259,18 @@ SlashCmdList["REFLUX"] = function (msg)
 		end
 	elseif cmd == "switchexact" then
 		local addon,profile = strmatch(arg, "%s*([^%s]+)%s*(.*)");
+		if not addon or not profile then
+			showHelp()
+			return
+		end
 		setAceProfile(profile,addon)
 		-- We dont switch emulated profiles Ace profiles only since we are NOT reloadiing the UI
 		-- this is hacky
 	elseif cmd == "switch" then
+		if not arg or strlen(arg) < 1 then
+			showHelp()
+			return
+		end
 		-- Check RefluxDB to see if we have a createdProfile called xxx
 		if RefluxDB.profiles[arg] then
 			-- do a dep copy of all the saved off tables
@@ -276,6 +284,10 @@ SlashCmdList["REFLUX"] = function (msg)
 		RefluxDB.activeProfile=arg
 		ReloadUI()
 	elseif cmd == "addons" then
+		if not arg or strlen(arg) < 1 then
+			showHelp()
+			return
+		end
 		if RefluxDB.addons[arg] then
 			restoreAddonState(RefluxDB.addons[arg])
 		end
@@ -300,7 +312,7 @@ SlashCmdList["REFLUX"] = function (msg)
 			storeAddonState(RefluxDB.addons[RefluxDB.activeProfile])
 			print("Saving addons")
 		end
-	elseif cmd == "create" and strlen(arg) > 1 then
+	elseif cmd == "create" and strlen(arg) > 2 then
 		setAceProfile(arg)
 		RefluxDB.profiles[arg] = {}
 		RefluxDB.activeProfile=arg
@@ -308,7 +320,7 @@ SlashCmdList["REFLUX"] = function (msg)
 			setglobal(var,nil)
 		end
 		ReloadUI()
-	elseif cmd == "copy" and strlen(arg) > 1 then
+	elseif cmd == "copy" and strlen(arg) > 2 then
 		if not RefluxDB.activeProfile then
 			print("You need to activate a profile before you can copy from another profile")
 			return
@@ -319,7 +331,7 @@ SlashCmdList["REFLUX"] = function (msg)
 		end
 		copyAceProfile(arg)
 		ReloadUI()
-	elseif cmd == "delete" and strlen(arg) > 1 then
+	elseif cmd == "delete" and strlen(arg) > 2 then
 		if RefluxDB.profiles[arg] then
 			RefluxDB.profiles[arg] = nil
 			RefluxDB.addons[arg] = nil
@@ -328,7 +340,7 @@ SlashCmdList["REFLUX"] = function (msg)
 			RefluxDB.activeProfile = false
 		end
 		deleteAceProfile(arg)
-	elseif cmd == "add" and strlen(arg) > 1 then
+	elseif cmd == "add" and strlen(arg) > 2 then
 		if RefluxDB.emulated then
 			if getglobal(arg) then
 				tinsert(RefluxDB.emulated,arg)
