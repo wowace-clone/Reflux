@@ -325,11 +325,16 @@ SlashCmdList["REFLUX"] = function (msg)
 			print("You need to activate a profile before you can copy from another profile")
 			return
 		end
+		copyAceProfile(arg)
 		if RefluxDB.profiles[arg] then
 			RefluxDB.profiles[RefluxDB.activeProfile] = DeepCopy(RefluxDB.profiles[arg])
 			RefluxDB.addons[RefluxDB.activeProfile] = DeepCopy(RefluxDB.addons[arg])
+			for k,v in pairs(RefluxDB.profiles[activeProfile]) do
+				if v and k then
+					setglobal(k,DeepCopy(v))
+				end
+			end
 		end
-		copyAceProfile(arg)
 		ReloadUI()
 	elseif cmd == "delete" and strlen(arg) > 2 then
 		if RefluxDB.profiles[arg] then
