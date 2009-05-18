@@ -208,7 +208,7 @@ local function showHelp()
 	print("/reflux delete [profile]")
 	print("This is delete a given profile. Please NOTE you can NOT delete the active profile.")
 	print("/reflux switchexact addonSVName profile")
-	print("This will reset JUSt the profiled addonSVname to the given profile. This requires advance knowledge of the addon saved variable name.")
+	print("This will reset JUST the profiled addonSVname to the given profile. This requires advance knowledge of the addon saved variable name.")
 end
 -- Store Addon state
 local function storeAddonState(tbl)
