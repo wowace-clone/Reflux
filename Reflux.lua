@@ -329,7 +329,7 @@ SlashCmdList["REFLUX"] = function (msg)
 		if RefluxDB.profiles[arg] then
 			RefluxDB.profiles[RefluxDB.activeProfile] = DeepCopy(RefluxDB.profiles[arg])
 			RefluxDB.addons[RefluxDB.activeProfile] = DeepCopy(RefluxDB.addons[arg])
-			for k,v in pairs(RefluxDB.profiles[activeProfile]) do
+			for k,v in pairs(RefluxDB.profiles[RefluxDB.activeProfile]) do
 				if v and k then
 					setglobal(k,DeepCopy(v))
 				end
