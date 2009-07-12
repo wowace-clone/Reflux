@@ -257,6 +257,16 @@ SlashCmdList["REFLUX"] = function (msg)
 				print(var.." is being emulated.")
 			end
 		end
+		if RefluxDB.addons then
+			print("Addon state for the active profile")
+			for k,v in pairs(RefluxDB.addons[RefluxDB.activeProfile]) do
+				local state = "off"
+				if v == 1 then
+					state = "on"
+				end
+				print(k..":"..state)
+			end
+		end
 	elseif cmd == "switchexact" then
 		local addon,profile = strmatch(arg, "%s*([^%s]+)%s*(.*)");
 		if not addon or not profile then
@@ -280,6 +290,7 @@ SlashCmdList["REFLUX"] = function (msg)
 				end
 			end
 		end
+		RefluxDB.profiles[arg] = {}
 		setAceProfile(arg)
 		RefluxDB.activeProfile=arg
 		ReloadUI()
