@@ -1,4 +1,4 @@
-## Interface: 30100
+## Interface: 30200
 ## Title: Reflux
 ## Notes: Addon to switch all your AceDB profiles via slash command. This tool also allows you to emulate profiles for non AceDB addons.
 ## DefaultState: enabled
