@@ -99,6 +99,63 @@ local function setAceProfile(profile, addon)
 		end
 	end
 end
+-- Attempt to save all current profiles to a Define one
+-- this cloning is to make it easier to transition to Reflux management
+local function cloneProfiles(profile)
+	loadAceLibs()
+	local LibStub = _G["LibStub"]
+	local AceLibrary = _G["AceLibrary"]
+	local ls_ace = false
+	-- Ace DB 3 check
+	if LibStub then
+		local AceDB = LibStub:GetLibrary("AceDB-3.0",true)
+		if AceDB and AceDB.db_registry then
+			for db in pairs(AceDB.db_registry) do
+				if not db.parent then --db.sv is a ref to the saved vairable name
+					local currentProfile = db:GetCurrentProfile()
+					db:SetProfile(profile)
+					db:CopyProfile(currentProfile,false)
+					
+				end
+			end
+		end
+	end
+	-- Ace DB 2 check is thoery we shoul dbe able to check this via LibStub
+	-- However someone may have some anceitn copy of Ace2 that was never upgraded to LibStub
+	-- AceLibrary delegate to LibStub so its all good
+	if AceLibrary and AceLibrary:HasInstance("AceDB-2.0") then
+		local AceDB = AceLibrary("AceDB-2.0")
+		if AceDB and AceDB.registry then
+			for db in pairs(AceDB.registry) do
+				local function cp()
+					local currentProfile = db:GetProfile()
+					db:SetProfile(profile)
+					db:CopyProfileFrom(currentProfile)
+				end
+				if db:IsActive() then
+					pcall(cp)
+				else
+					db:ToggleActive(true)
+					pcall(cp)
+					db:ToggleActive(false)
+				end
+			end
+		end
+	end	
+	-- Rock copy profile
+	if Rock and Rock:HasLibrary("LibRockDB-1.0") then
+		local RockDB = Rock:GetLibrary("LibRockDB-1.0",false,false)
+		if RockDB and RockDB.data then
+			for db in pairs(RockDB.data) do
+				local currentProfile = db:GetProfile();
+				db:SetProfile(profile)
+				db:CopyProfile(currentProfile)
+			end
+		end
+	end	
+	
+
+end
 -- Copy ace profiles if we find any
 local function copyAceProfile(profile)
 	--loadAceLibs()
@@ -209,6 +266,8 @@ local function showHelp()
 	print("This is delete a given profile. Please NOTE you can NOT delete the active profile.")
 	print("/reflux switchexact addonSVName profile")
 	print("This will reset JUST the profiled addonSVname to the given profile. This requires advance knowledge of the addon saved variable name.")
+	print("/reflux snapshot [new profile name]")
+	printf("This will instruct Reflux to scan your profiles and copy them into the new profile name. This command should allow you to snapshot your current config to a new profile")
 end
 -- Store Addon state
 local function storeAddonState(tbl)
@@ -333,6 +392,32 @@ SlashCmdList["REFLUX"] = function (msg)
 			setglobal(var,nil)
 		end
 		ReloadUI()
+	elseif cmd == "snapshot" and strlen(arg) > 2 then
+		cloneProfiles(arg)
+		if not RefluxDB.activeProfile then
+			RefluxDB.profiles[arg] = {}
+			RefluxDB.activeProfile=arg
+			for index,var in ipairs(RefluxDB.emulated) do
+				setglobal(var,nil)
+			end
+		end
+		if RefluxDB.profiles[arg] then
+			RefluxDB.profiles[RefluxDB.activeProfile] = DeepCopy(RefluxDB.profiles[arg])
+			RefluxDB.addons[RefluxDB.activeProfile] = DeepCopy(RefluxDB.addons[arg])
+			for k,v in pairs(RefluxDB.profiles[RefluxDB.activeProfile]) do
+				if v and k then
+					setglobal(k,DeepCopy(v))
+				end
+			end
+		end
+		RefluxDB.activeProfile = arg
+	--[[
+		Clone command will create a new profile based off of existing profiles
+		To accomplish this, we will go through each Ace2/3 profile figure out the curent profile name
+		then we will create a new profile and ask each addond to copy their previous profile
+		to the new profile.
+	--]]	
+		
 	elseif cmd == "copy" and strlen(arg) > 2 then
 		if not RefluxDB.activeProfile then
 			print("You need to activate a profile before you can copy from another profile")
