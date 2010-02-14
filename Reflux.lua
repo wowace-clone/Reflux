@@ -279,6 +279,19 @@ local function storeAddonState(tbl)
 		index = index + 1
 	end
 end
+local function getAddonSV(tbl)
+	local index = 1
+	local count = GetNumAddOns()
+	while index < count do
+		local name, title, notes, enabled, loadable, reason, security = GetAddOnInfo(index)
+		local variables = GetAddOnMetadata(name,"SavedVariables")
+		tbl[name]=variables or ""
+		index = index + 1
+		if variables then
+			print("Addon:"..name.." SV:"..variables)
+		end
+	end
+end	
 local function restoreAddonState(tbl)
 	for k,v in pairs(tbl) do
 		if v == 1 then
@@ -316,8 +329,11 @@ SlashCmdList["REFLUX"] = function (msg)
 				print(var.." is being emulated.")
 			end
 		end
-		if RefluxDB.addons and RefluxDB.activeProfile then
+		if RefluxDB.addons and RefluxDB.activeProfile and RefluxDB.addons[RefluxDB.activeProfile] then
 			print("Addon state for the active profile")
+			if not RefluxDB.addons[RefluxDB.activeProfile] then
+				RefluxDB.addons[RefluxDB.activeProfile] = {}
+			end
 			for k,v in pairs(RefluxDB.addons[RefluxDB.activeProfile]) do
 				local state = "off"
 				if v == 1 then
@@ -326,8 +342,10 @@ SlashCmdList["REFLUX"] = function (msg)
 				print(k..":"..state)
 			end
 		else
-			printf("No active profile set, nothing to show.")
+			printf("Addon state is not being saved.")
 		end
+		local tbl = {}
+		getAddonSV(tbl)
 	elseif cmd == "switchexact" then
 		local addon,profile = strmatch(arg, "%s*([^%s]+)%s*(.*)");
 		if not addon or not profile then
@@ -351,7 +369,6 @@ SlashCmdList["REFLUX"] = function (msg)
 				end
 			end
 		end
-		RefluxDB.profiles[arg] = {}
 		setAceProfile(arg)
 		RefluxDB.activeProfile=arg
 		ReloadUI()
@@ -397,6 +414,7 @@ SlashCmdList["REFLUX"] = function (msg)
 		if not RefluxDB.activeProfile then
 			RefluxDB.profiles[arg] = {}
 			RefluxDB.activeProfile=arg
+			RefluxDB.addons[arg] = {}
 			for index,var in ipairs(RefluxDB.emulated) do
 				setglobal(var,nil)
 			end
