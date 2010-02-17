@@ -267,7 +267,7 @@ local function showHelp()
 	print("/reflux switchexact addonSVName profile")
 	print("This will reset JUST the profiled addonSVname to the given profile. This requires advance knowledge of the addon saved variable name.")
 	print("/reflux snapshot [new profile name]")
-	printf("This will instruct Reflux to scan your profiles and copy them into the new profile name. This command should allow you to snapshot your current config to a new profile")
+	print("This will instruct Reflux to scan your profiles and copy them into the new profile name. This command should allow you to snapshot your current config to a new profile")
 end
 -- Store Addon state
 local function storeAddonState(tbl)
@@ -342,7 +342,7 @@ SlashCmdList["REFLUX"] = function (msg)
 				print(k..":"..state)
 			end
 		else
-			printf("Addon state is not being saved.")
+			print("Addon state is not being saved.")
 		end
 		local tbl = {}
 		getAddonSV(tbl)
