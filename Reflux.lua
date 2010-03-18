@@ -371,6 +371,21 @@ SlashCmdList["REFLUX"] = function (msg)
 		end
 		setAceProfile(arg)
 		RefluxDB.activeProfile=arg
+		local frame = CreateFrame("FRAME", "RefluxEmulator");
+		frame:RegisterEvent("PLAYER_LOGOUT");
+		local function eventHandler(self, event, ...)
+			-- Check RefluxDB to see if we have a createdProfile called xxx
+			-- Add this at serialization state so we can force the change down
+			if RefluxDB.profiles[arg] then
+				-- do a dep copy of all the saved off tables
+				for k,v in pairs(RefluxDB.profiles[arg]) do
+					if v and k then
+						setglobal(k,DeepCopy(v))
+					end
+				end
+			end		
+		end
+		frame:SetScript("OnEvent", eventHandler);
 		ReloadUI()
 	elseif cmd == "addons" then
 		if not arg or strlen(arg) < 1 then
@@ -390,7 +405,7 @@ SlashCmdList["REFLUX"] = function (msg)
 		end
 		if RefluxDB.profiles[RefluxDB.activeProfile] then
 			for index,var in ipairs(RefluxDB.emulated) do
-				RefluxDB.profiles[RefluxDB.activeProfile][var]=getglobal(var)
+				RefluxDB.profiles[RefluxDB.activeProfile][var]=DeepCopy(getglobal(var))
 				print("Saving "..var)
 			end
 		else
