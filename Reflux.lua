@@ -35,6 +35,34 @@ local function loadAceLibs()
 		LoadAddOn("LibRock-1.0")
 	end
 end
+
+--[[ 
+Contriuted Ignore support functions
+--]]
+
+-- Map a SV reference to an actual SavedVariables DB name
+local function getDbNameForSv(sv)
+	for k, v in pairs(_G) do
+    	if v == sv then
+      		return k
+    	end
+  	end
+  	return nil
+end
+
+-- Check if the specified db name is on the ignore list
+local function isIgnored(dbName)
+	if dbName ~= nil and RefluxDB.ignored then
+    	for k, v in pairs(RefluxDB.ignored) do
+      		if v == dbName then
+        		return true
+      		end
+    	end
+  	end
+  	return false
+end
+
+
 -- Setup ace profiles if we find any
 local function setAceProfile(profile, addon)
 	--loadAceLibs()
@@ -49,12 +77,15 @@ local function setAceProfile(profile, addon)
 		if AceDB and AceDB.db_registry then
 			for db in pairs(AceDB.db_registry) do
 				if not db.parent then --db.sv is a ref to the saved vairable name
-					if addon then
-						if addon and db.sv == addon then
+					local dbName = getDbNameForSv(db.sv)
+					if not isIgnored(dbName) then
+						if addon then
+							if addon and db.sv == addon then
+								db:SetProfile(profile)
+							end
+						else
 							db:SetProfile(profile)
 						end
-					else
-						db:SetProfile(profile)
 					end
 				end
 			end
@@ -67,17 +98,19 @@ local function setAceProfile(profile, addon)
 		local AceDB = AceLibrary("AceDB-2.0")
 		if AceDB and AceDB.registry then
 			for db in pairs(AceDB.registry) do
-				if addon then
-					if addon and db.db.name == addon then
-						db:SetProfile(profile)
-					end
-				else 
-					if db:IsActive() then
-						db:SetProfile(profile)
-					else
-						db:ToggleActive(true)
-						db:SetProfile(profile)
-						db:ToggleActive(false)
+				if not isIgnored(db.db.name) then
+					if addon then
+						if addon and db.db.name == addon then
+							db:SetProfile(profile)
+						end
+					else 
+						if db:IsActive() then
+							db:SetProfile(profile)
+						else
+							db:ToggleActive(true)
+							db:SetProfile(profile)
+							db:ToggleActive(false)
+						end
 					end
 				end
 			end
@@ -88,12 +121,14 @@ local function setAceProfile(profile, addon)
 		local RockDB = Rock:GetLibrary("LibRockDB-1.0",false,false)
 		if RockDB and RockDB.data then
 			for db in pairs(RockDB.data) do
-				if addon then
-					if addon and db.dbName == addon then
+				if not isIgnored(db.dbName) then
+					if addon then
+						if addon and db.dbName == addon then
+							db:SetProfile(profile)
+						end
+					else
 						db:SetProfile(profile)
 					end
-				else
-					db:SetProfile(profile)
 				end
 			end
 		end
@@ -115,7 +150,6 @@ local function cloneProfiles(profile)
 					local currentProfile = db:GetCurrentProfile()
 					db:SetProfile(profile)
 					db:CopyProfile(currentProfile,false)
-					
 				end
 			end
 		end
@@ -267,7 +301,11 @@ local function showHelp()
 	print("/reflux switchexact addonSVName profile")
 	print("This will reset JUST the profiled addonSVname to the given profile. This requires advance knowledge of the addon saved variable name.")
 	print("/reflux snapshot [new profile name]")
-	print("This will instruct Reflux to scan your profiles and copy them into the new profile name. This command should allow you to snapshot your current config to a new profile")
+	print("This will instruct Reflux to scan your profiles and copy them into the new profile name. This command should allow you to snapshot your current config to a new profile.")
+	print("/reflux ignore [saved variable]")
+	print("This will mark the saved variable as ignored for the context of switching.")
+	print("/reflux unignore [saved variable]")
+	print("This will remove a previously set ignore.")
 end
 -- Store Addon state
 local function storeAddonState(tbl)
@@ -279,6 +317,7 @@ local function storeAddonState(tbl)
 		index = index + 1
 	end
 end
+-- Temp funcation, doesnt work due to GetAddonMetadata wont show SavedVariables
 local function getAddonSV(tbl)
 	local index = 1
 	local count = GetNumAddOns()
@@ -311,7 +350,7 @@ SlashCmdList["REFLUX"] = function (msg)
 	end
 	-- Create or use the existing saved varaibles.
 	-- We are never used till after a player logs in.
-	RefluxDB = RefluxDB or { profiles = { }, activeProfile=false, emulated={}, addons = {} }
+	RefluxDB = RefluxDB or { profiles = { }, activeProfile=false, emulated={}, addons = {}, ignored = {} }
 	if cmd == "show" then
 		if RefluxDB.activeProfile then
 			print("Active Profile is "..RefluxDB.activeProfile)
@@ -322,8 +361,8 @@ SlashCmdList["REFLUX"] = function (msg)
 			print(k.." is an available profile.")
 		end
 		if RefluxDB.emulated then
-			if #RefluxDB.emulated == 0 then
-				print("Nothing is being emulated")
+			if #RefluxDB.emulated < 1 then
+				print("Nothing is being emulated.")
 			end
 			for index,var in pairs(RefluxDB.emulated) do
 				print(var.." is being emulated.")
@@ -343,6 +382,11 @@ SlashCmdList["REFLUX"] = function (msg)
 			end
 		else
 			print("Addon state is not being saved.")
+		end
+		if RefluxDB.ignore then
+			for k,v in pairs(RefluxDB.ignore) do
+				print(k.." is being ignored for switching.")
+			end
 		end
 		local tbl = {}
 		getAddonSV(tbl)
@@ -396,7 +440,7 @@ SlashCmdList["REFLUX"] = function (msg)
 			restoreAddonState(RefluxDB.addons[arg])
 		end
 	elseif cmd == "cleardb" then
-		RefluxDB = { profiles = { }, activeProfile=false, emulated={},addons = {} }
+		RefluxDB = { profiles = { }, activeProfile=false, emulated={},addons = {}, ignored = {} }
 		print("Reflux database cleared.")
 	elseif cmd == "save" then
 		if not RefluxDB.activeProfile then
@@ -485,6 +529,21 @@ SlashCmdList["REFLUX"] = function (msg)
 				print(arg.." not found, please check the spelling it is case sensistive.")
 			end
 		end
+	elseif cmd == "ignore" and strlen(arg) > 2 then
+		if not RefluxDB.ignored then
+			RefluxDB.ignored = {}
+		end
+	  	if getglobal(arg) then
+			RefluxDB.ignored[arg] = arg
+		    print(arg.." Added to ignore list.")
+		else
+			print(arg.." not found, please check the spelling it is case sensistive.")
+		end
+	elseif cmd == "unignore" and strlen(arg) > 2 then
+		if not RefluxDB.ignored then
+			RefluxDB.ignored = {}
+		end
+		RefluxDB.ignored[arg] = nil
 	else
 		showHelp()
 	end
