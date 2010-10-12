@@ -344,7 +344,7 @@ end
 
 SlashCmdList["REFLUX"] = function (msg)
 	local cmd, arg = strmatch(msg, "%s*([^%s]+)%s*(.*)");
-	if cmd == nil or strlen(cmd) < 1 then
+	if cmd == nil or strlen(cmd) < 1 or cmd == "help" then
 		showHelp()
 		return
 	end
