@@ -453,7 +453,7 @@ SlashCmdList["REFLUX"] = function (msg)
 				print("Saving "..var)
 			end
 		else
-			print("No emulations saved.")
+			print("No emulations saved. This is because you have not issued a switch, create or snapshot command.")
 		end
 		if arg == "addons" then
 			RefluxDB.addons[RefluxDB.activeProfile] = {}
