@@ -447,13 +447,10 @@ SlashCmdList["REFLUX"] = function (msg)
 			print("No profiles are active, please create or switch to one.")
 			return
 		end
-		if RefluxDB.profiles[RefluxDB.activeProfile] then
-			for index,var in ipairs(RefluxDB.emulated) do
-				RefluxDB.profiles[RefluxDB.activeProfile][var]=DeepCopy(getglobal(var))
-				print("Saving "..var)
-			end
-		else
-			print("No emulations saved. This is because you have not issued a switch, create or snapshot command.")
+		RefluxDB.profiles[RefluxDB.activeProfile] = {}
+		for index,var in ipairs(RefluxDB.emulated) do
+			RefluxDB.profiles[RefluxDB.activeProfile][var]=DeepCopy(getglobal(var))
+			print("Saving "..var)
 		end
 		if arg == "addons" then
 			RefluxDB.addons[RefluxDB.activeProfile] = {}
